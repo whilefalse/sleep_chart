@@ -1,4 +1,4 @@
-<h1>Show Sleep</h1>
+<h1><%= friendly_date @date, @today %></h1>
 
 <ul>
 
@@ -13,6 +13,3 @@
   </li>
 
 </ul>
-
-<span><%= link "Edit", to: Routes.sleep_path(@conn, :edit, @sleep) %></span>
-<span><%= link "Back", to: Routes.sleep_path(@conn, :index) %></span>

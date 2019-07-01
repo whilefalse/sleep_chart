@@ -14,5 +14,7 @@ defmodule SleepChart.Sleeps.Sleep do
     sleep
     |> cast(attrs, [:date, :slept])
     |> validate_required([:date, :slept])
+    |> unique_constraint(:date, [message: "You've already recorded a sleep for this date."])
   end
+
 end

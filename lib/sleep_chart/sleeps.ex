@@ -9,16 +9,10 @@ defmodule SleepChart.Sleeps do
   alias SleepChart.Sleeps.Sleep
 
   @doc """
-  Returns the list of sleeps.
-
-  ## Examples
-
-      iex> list_sleeps()
-      [%Sleep{}, ...]
-
+  Returns the current day in given timezone
   """
-  def list_sleeps do
-    Repo.all(Sleep)
+  def today(timezone) do
+    DateTime.to_date Timex.now(timezone)
   end
 
   @doc """
@@ -28,14 +22,18 @@ defmodule SleepChart.Sleeps do
 
   ## Examples
 
-      iex> get_sleep!(123)
+      iex> get_sleep!("2019-06-10"})
       %Sleep{}
 
-      iex> get_sleep!(456)
-      ** (Ecto.NoResultsError)
+      iex> get_sleep!("1970-01-01")
+      nil
 
   """
-  def get_sleep!(id), do: Repo.get!(Sleep, id)
+  def get_sleep_by_date(date) do
+    Repo.one(
+      from s in Sleep,
+      where: s.date == ^date)
+  end
 
   @doc """
   Creates a sleep.
@@ -53,40 +51,6 @@ defmodule SleepChart.Sleeps do
     %Sleep{}
     |> Sleep.changeset(attrs)
     |> Repo.insert()
-  end
-
-  @doc """
-  Updates a sleep.
-
-  ## Examples
-
-      iex> update_sleep(sleep, %{field: new_value})
-      {:ok, %Sleep{}}
-
-      iex> update_sleep(sleep, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_sleep(%Sleep{} = sleep, attrs) do
-    sleep
-    |> Sleep.changeset(attrs)
-    |> Repo.update()
-  end
-
-  @doc """
-  Deletes a Sleep.
-
-  ## Examples
-
-      iex> delete_sleep(sleep)
-      {:ok, %Sleep{}}
-
-      iex> delete_sleep(sleep)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_sleep(%Sleep{} = sleep) do
-    Repo.delete(sleep)
   end
 
   @doc """

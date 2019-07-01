@@ -1,62 +1,48 @@
 defmodule SleepChartWeb.SleepController do
   use SleepChartWeb, :controller
-
   alias SleepChart.Sleeps
   alias SleepChart.Sleeps.Sleep
 
-  def index(conn, _params) do
-    sleeps = Sleeps.list_sleeps()
-    render(conn, "index.html", sleeps: sleeps)
+  plug :parse_date when action in [:show, :create]
+  plug :get_today
+
+  @date_format "{YYYY}-{0M}-{0D}"
+  @timezone "Europe/London"
+
+  def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
+    {:ok, date} = Timex.format(today, @date_format)
+    redirect(conn, to: Routes.sleep_path(conn, :show, date))
   end
 
-  def new(conn, _params) do
-    changeset = Sleeps.change_sleep(%Sleep{})
-    render(conn, "new.html", changeset: changeset)
-  end
-
-  def create(conn, %{"sleep" => sleep_params}) do
-    case Sleeps.create_sleep(sleep_params) do
+  def create(%Plug.Conn{assigns: %{date: date}} = conn, %{"sleep" => sleep_params}) do
+    params = %{date: date, slept: sleep_params["slept"]}
+    case Sleeps.create_sleep(params) do
       {:ok, sleep} ->
-        conn
-        |> put_flash(:info, "Sleep created successfully.")
-        |> redirect(to: Routes.sleep_path(conn, :show, sleep))
-
+        render(conn, "show.html", sleep: sleep)
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    sleep = Sleeps.get_sleep!(id)
-    render(conn, "show.html", sleep: sleep)
-  end
-
-  def edit(conn, %{"id" => id}) do
-    sleep = Sleeps.get_sleep!(id)
-    changeset = Sleeps.change_sleep(sleep)
-    render(conn, "edit.html", sleep: sleep, changeset: changeset)
-  end
-
-  def update(conn, %{"id" => id, "sleep" => sleep_params}) do
-    sleep = Sleeps.get_sleep!(id)
-
-    case Sleeps.update_sleep(sleep, sleep_params) do
-      {:ok, sleep} ->
-        conn
-        |> put_flash(:info, "Sleep updated successfully.")
-        |> redirect(to: Routes.sleep_path(conn, :show, sleep))
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", sleep: sleep, changeset: changeset)
+  def show(%Plug.Conn{assigns: %{date: date}} = conn, _) do
+    case Sleeps.get_sleep_by_date(date) do
+      sleep = %Sleep{} -> render(conn, "show.html", sleep: sleep)
+      nil -> render(conn, "new.html", changeset: Sleeps.change_sleep(%Sleep{date: date}))
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    sleep = Sleeps.get_sleep!(id)
-    {:ok, _sleep} = Sleeps.delete_sleep(sleep)
+  defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, opts \\ []) do
+    case Timex.parse(date, @date_format) do
+      {:ok, parsed} -> assign(conn, :date, NaiveDateTime.to_date(parsed))
+      {:error, _} ->
+        conn
+        |> put_status(:not_found)
+        |> put_view(SleepChartWeb.ErrorView)
+        |> render(:"404")
+    end
+  end
 
-    conn
-    |> put_flash(:info, "Sleep deleted successfully.")
-    |> redirect(to: Routes.sleep_path(conn, :index))
+  defp get_today(conn, _opts) do
+    assign(conn, :today, Sleeps.today @timezone)
   end
 end

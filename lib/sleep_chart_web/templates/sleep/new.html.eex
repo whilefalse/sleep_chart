@@ -1,5 +1,3 @@
-<h1>New Sleep</h1>
+<h1><%= friendly_date(@date, @today) %></h1>
 
-<%= render "form.html", Map.put(assigns, :action, Routes.sleep_path(@conn, :create)) %>
-
-<span><%= link "Back", to: Routes.sleep_path(@conn, :index) %></span>
+<%= render "form.html", Map.put(assigns, :action, "") %>

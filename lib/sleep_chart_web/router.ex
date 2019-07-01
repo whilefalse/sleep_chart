@@ -15,6 +15,10 @@ defmodule SleepChartWeb.Router do
 
   scope "/", SleepChartWeb do
     pipe_through :browser
+
+    get "/", SleepController, :index
+    get "/:date", SleepController, :show
+    put "/:date", SleepController, :create
   end
 
   # Other scopes may use custom stacks.
