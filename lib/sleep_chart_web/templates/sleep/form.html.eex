@@ -7,11 +7,6 @@
 
   <%= error_tag f, :date %>
 
-  <%= label f, :slept %>
-  <%= checkbox f, :slept %>
-  <%= error_tag f, :slept %>
-
-  <div>
-    <%= submit "Save" %>
-  </div>
+  <%= submit "😀", name: "sleep[slept]" %>
+  <%= submit "🙁", name: "sleep[didNotSleep]" %>
 <% end %>

@@ -1,20 +1,27 @@
 <h1><%= friendly_date @date, @today %></h1>
 
-<ul>
+<% {stars, stars_left, treat} = treat_progress(@total_sleeps, @sleep.slept) %>
+<div class="slept">
+  <%= if treat do %>
+  🎆
+  <% else %>
+    <%= if @sleep.slept do %>
+    😀
+    <% else %>
+    🙁
+    <% end%>
+  <% end %>
+</div>
 
-  <li>
-    <strong>Date:</strong>
-    <%= @sleep.date %>
-  </li>
-
-  <li>
-    <strong>Slept:</strong>
-    <%= @sleep.slept %>
-  </li>
-
-</ul>
-
-<h2>Treat Progress</h2>
-<% {stars, treat} = treat_progress(@total_sleeps, @sleep.slept) %>
-Stars: <%= stars %>
-Treat: <%= treat %>
+<div class="stars">
+  <%= if stars > 0 do %>
+    <%= for n <- 1..stars do %>
+      ⭐ 
+    <% end %>
+  <% end %>
+  <%= if stars_left > 0 do %>
+    <%= for n <- Range.new(1, stars_left) do %>
+      ☆
+    <% end %>
+  <% end %>
+</div>

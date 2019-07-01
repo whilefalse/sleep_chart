@@ -12,8 +12,8 @@ defmodule SleepChartWeb.SleepView do
 
   def treat_progress(total_sleeps, slept_this_date) do
     case (rem total_sleeps, @sleeps_for_treat) do
-      0 when slept_this_date -> {@sleeps_for_treat, true}
-      n -> {n, false}
+      0 when slept_this_date -> {@sleeps_for_treat, 0, true}
+      n -> {n, @sleeps_for_treat - n, false}
     end
   end
 end

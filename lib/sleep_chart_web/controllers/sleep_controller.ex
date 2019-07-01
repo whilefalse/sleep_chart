@@ -14,7 +14,12 @@ defmodule SleepChartWeb.SleepController do
   end
 
   def create(%Plug.Conn{assigns: %{date: date}} = conn, %{"sleep" => sleep_params}) do
-    params = %{date: date, slept: sleep_params["slept"]}
+    slept = case sleep_params do
+      %{"slept" => _} -> true
+      _ -> false
+    end
+    params = %{date: date, slept: slept}
+
     case Sleeps.create_sleep(params) do
       {:ok, sleep} ->
         redirect(conn, to: Routes.sleep_path(conn, :show, format_date(date)))
