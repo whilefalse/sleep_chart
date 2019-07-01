@@ -1,0 +1,5 @@
+<h1>Edit Sleep</h1>
+
+<%= render "form.html", Map.put(assigns, :action, Routes.sleep_path(@conn, :update, @sleep)) %>
+
+<span><%= link "Back", to: Routes.sleep_path(@conn, :index) %></span>

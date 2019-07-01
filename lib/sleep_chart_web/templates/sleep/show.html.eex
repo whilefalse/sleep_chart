@@ -1,0 +1,18 @@
+<h1>Show Sleep</h1>
+
+<ul>
+
+  <li>
+    <strong>Date:</strong>
+    <%= @sleep.date %>
+  </li>
+
+  <li>
+    <strong>Slept:</strong>
+    <%= @sleep.slept %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.sleep_path(@conn, :edit, @sleep) %></span>
+<span><%= link "Back", to: Routes.sleep_path(@conn, :index) %></span>
