@@ -29,7 +29,7 @@ defmodule SleepChart.Sleeps do
       nil
 
   """
-  def get_sleep_by_date(date) do
+  def get_sleep_by_date(%Date{} = date) do
     Repo.one(
       from s in Sleep,
       where: s.date == ^date)
@@ -64,5 +64,14 @@ defmodule SleepChart.Sleeps do
   """
   def change_sleep(%Sleep{} = sleep) do
     Sleep.changeset(sleep, %{})
+  end
+
+  @doc """
+  Returns the number of sleeps with slept=true before or on the given date
+  """
+  def total_sleeps_before(%Date{} = date) do
+    Repo.aggregate(
+      (from s in Sleep,
+      where: s.date <= ^date and s.slept == true), :count, :slept)
   end
 end

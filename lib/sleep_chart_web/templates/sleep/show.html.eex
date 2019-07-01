@@ -13,3 +13,8 @@
   </li>
 
 </ul>
+
+<h2>Treat Progress</h2>
+<% {stars, treat} = treat_progress(@total_sleeps, @sleep.slept) %>
+Stars: <%= stars %>
+Treat: <%= treat %>

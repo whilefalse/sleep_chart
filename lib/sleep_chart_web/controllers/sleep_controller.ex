@@ -10,15 +10,14 @@ defmodule SleepChartWeb.SleepController do
   @timezone "Europe/London"
 
   def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
-    {:ok, date} = Timex.format(today, @date_format)
-    redirect(conn, to: Routes.sleep_path(conn, :show, date))
+    redirect(conn, to: Routes.sleep_path(conn, :show, format_date(today)))
   end
 
   def create(%Plug.Conn{assigns: %{date: date}} = conn, %{"sleep" => sleep_params}) do
     params = %{date: date, slept: sleep_params["slept"]}
     case Sleeps.create_sleep(params) do
       {:ok, sleep} ->
-        render(conn, "show.html", sleep: sleep)
+        redirect(conn, to: Routes.sleep_path(conn, :show, format_date(date)))
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -26,9 +25,14 @@ defmodule SleepChartWeb.SleepController do
 
   def show(%Plug.Conn{assigns: %{date: date}} = conn, _) do
     case Sleeps.get_sleep_by_date(date) do
-      sleep = %Sleep{} -> render(conn, "show.html", sleep: sleep)
+      sleep = %Sleep{} -> render(conn, "show.html", sleep: sleep, total_sleeps: Sleeps.total_sleeps_before(date))
       nil -> render(conn, "new.html", changeset: Sleeps.change_sleep(%Sleep{date: date}))
     end
+  end
+
+  defp format_date(%Date{} = date) do
+    {:ok, date} = Timex.format(date, @date_format)
+    date
   end
 
   defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, opts \\ []) do
