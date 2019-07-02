@@ -2,6 +2,6 @@
   <%= error_tag f, :date %>
   <div class="slept-buttons">
      <%= submit "I slept all night 😴 ", name: "sleep[slept]" %>
-     <%= submit "I didn't sleep all night 😫", name: "sleep[didNotSleep]" %>
+     <%= submit "I woke up 😫", name: "sleep[didNotSleep]" %>
   </div>
 <% end %>
