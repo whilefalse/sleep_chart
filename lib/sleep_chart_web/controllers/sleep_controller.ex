@@ -6,8 +6,9 @@ defmodule SleepChartWeb.SleepController do
   plug :parse_date when action in [:show, :create]
   plug :get_today
 
-  @date_format "{YYYY}-{0M}-{0D}"
-  @timezone "Europe/London"
+  @date_format Application.get_env(:sleep_chart, :date_format)
+  @timezone Application.get_env(:sleep_chart, :timezone)
+  @sleeps_for_treat Application.get_env(:sleep_chart, :sleeps_for_treat)
 
   def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
     redirect(conn, to: Routes.sleep_path(conn, :show, format_date(today)))
@@ -30,7 +31,9 @@ defmodule SleepChartWeb.SleepController do
 
   def show(%Plug.Conn{assigns: %{date: date}} = conn, _) do
     case Sleeps.get_sleep_by_date(date) do
-      sleep = %Sleep{} -> render(conn, "show.html", sleep: sleep, total_sleeps: Sleeps.total_sleeps_before(date))
+      sleep = %Sleep{} -> render(conn, "show.html",
+        sleep: sleep,
+        treat_progress: Sleeps.treat_progress(date, @sleeps_for_treat, sleep.slept))
       nil -> render(conn, "new.html", changeset: Sleeps.change_sleep(%Sleep{date: date}))
     end
   end

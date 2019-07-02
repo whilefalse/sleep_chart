@@ -1,6 +1,6 @@
 <h1><%= friendly_date @date, @today %></h1>
 
-<% {stars, stars_left, treat} = treat_progress(@total_sleeps, @sleep.slept) %>
+<% {stars, stars_left, treat} = @treat_progress %>
 <div class="slept">
   <%= if treat do %>
   🎆

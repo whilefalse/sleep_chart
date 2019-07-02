@@ -67,11 +67,19 @@ defmodule SleepChart.Sleeps do
   end
 
   @doc """
-  Returns the number of sleeps with slept=true before or on the given date
+  Returns information about the progress towards a treat
+
+  ## Examples
+      iex> treat_progress(~D[2019-01-01], 5, true)
+      { 2, 3, false }
   """
-  def total_sleeps_before(%Date{} = date) do
-    Repo.aggregate(
-      (from s in Sleep,
-      where: s.date <= ^date and s.slept == true), :count, :slept)
+  def treat_progress(%Date{} = date, sleeps_for_treat, slept_this_date) do
+    total_sleeps = Repo.aggregate(
+      (from s in Sleep, where: s.date <= ^date and s.slept == true), :count, :slept)
+
+    case (rem total_sleeps, sleeps_for_treat) do
+      0 when slept_this_date -> {sleeps_for_treat, 0, true}
+      n -> {n, sleeps_for_treat - n, false}
+    end
   end
 end
