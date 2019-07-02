@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-1 0 52 48">
+    <title>Five Pointed Star</title>
+    <path
+        fill="<%= if @full do %>#FFD700<% else %>none<% end %>"
+        stroke="<%= if @full do %>#555<% else %>#ccc<% end %>"
+        stroke-width="2"
+        d="m25,1 6,17h18l-14,11 5,17-15-10-15,10 5-17-14-11h18z" />
+</svg>

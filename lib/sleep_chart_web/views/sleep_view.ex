@@ -4,7 +4,7 @@ defmodule SleepChartWeb.SleepView do
   def friendly_date(sleep_date, today) do
     case sleep_date do
       ^today -> "Today"
-      _ -> sleep_date
+      _ -> Timex.format!(sleep_date, "{WDfull}, {D} {Mfull}")
     end
   end
 end

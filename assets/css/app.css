@@ -1,15 +1,67 @@
 /* This file is for your main application css. */
+* {
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #fefefe;
+    color: #14151f;
+    padding-top: 3.55em;
+}
 
-@import "./phoenix.css";
-
-button {
+header {
+    padding: 1.2em 0 1em 0;
+    box-shadow: 0px 0px 0.4em #dddddd;
+    position: fixed;
+    top: 0px;
+    left: 0px;
     display: block;
     width: 100%;
-    height: auto;
-    font-size: 10rem;
-    line-height: 12rem;
+    background: white;
 }
-.slept, .stars {
-    font-size: 10rem;
-    text-align: center;
+
+header h1 {
+    font-size: 1em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+}
+header h1 a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.container {
+    max-width: 960px;
+    padding: 0 2em;
+    margin: auto;
+}
+
+main h2 {
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+.slept-buttons {
+    font-size: 1.2em;
+}
+
+.slept-buttons button {
+    display: block;
+    margin-bottom: 1em;
+    width: 100%;
+    padding: 0.5em 0;
+}
+
+.stars-icons {
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+svg {
+    width: 3em;
+    height: 3em;
+}
+svg + svg {
+    margin-left: 0.2em;
 }
