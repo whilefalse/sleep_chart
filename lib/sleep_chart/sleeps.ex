@@ -82,4 +82,5 @@ defmodule SleepChart.Sleeps do
       n -> {n, sleeps_for_treat - n, false}
     end
   end
+
 end

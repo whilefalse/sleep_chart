@@ -6,16 +6,8 @@ defmodule SleepChartWeb.SleepController do
   plug :parse_date when action in [:show, :create]
   plug :get_today
 
-  @date_format Application.get_env(:sleep_chart, :date_format)
   @timezone Application.get_env(:sleep_chart, :timezone)
   @sleeps_for_treat Application.get_env(:sleep_chart, :sleeps_for_treat)
-
-  defimpl Phoenix.Param, for: Date do
-    def to_param(%Date{} = date) do
-      {:ok, date} = Timex.format(date, Application.get_env(:sleep_chart, :date_format))
-      date
-    end
-  end
 
   def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
     redirect(conn, to: Routes.sleep_path(conn, :show, today))
@@ -29,7 +21,7 @@ defmodule SleepChartWeb.SleepController do
     params = %{date: date, slept: slept}
 
     case Sleeps.create_sleep(params) do
-      {:ok, sleep} ->
+      {:ok, _} ->
         redirect(conn, to: Routes.sleep_path(conn, :show, date))
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
@@ -45,8 +37,8 @@ defmodule SleepChartWeb.SleepController do
     end
   end
 
-  defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, opts \\ []) do
-    case Timex.parse(date, @date_format) do
+  defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, _opts) do
+    case SleepChartWeb.SleepView.parse_date(date) do
       {:ok, parsed} -> assign(conn, :date, NaiveDateTime.to_date(parsed))
       {:error, _} ->
         conn
@@ -59,4 +51,11 @@ defmodule SleepChartWeb.SleepController do
   defp get_today(conn, _opts) do
     assign(conn, :today, Sleeps.today @timezone)
   end
+
+  defimpl Phoenix.Param, for: Date do
+    def to_param(%Date{} = date) do
+      SleepChartWeb.SleepView.format_date(date)
+    end
+  end
+
 end
