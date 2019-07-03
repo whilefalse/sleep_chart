@@ -2,12 +2,10 @@ defmodule SleepChartWeb.SleepController do
   use SleepChartWeb, :controller
   alias SleepChart.Sleeps
   alias SleepChart.Sleeps.Sleep
+  alias SleepChartWeb.Helpers.Date, as: DateHelper
 
   plug :parse_date when action in [:show, :create]
   plug :get_today
-
-  @timezone Application.get_env(:sleep_chart, :timezone)
-  @sleeps_for_treat Application.get_env(:sleep_chart, :sleeps_for_treat)
 
   def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
     redirect(conn, to: Routes.sleep_path(conn, :show, today))
@@ -17,7 +15,7 @@ defmodule SleepChartWeb.SleepController do
     case Sleeps.get_sleep_by_date(date) do
       sleep = %Sleep{} -> render(conn, "show.html",
         sleep: sleep,
-        treat_progress: Sleeps.treat_progress(date, @sleeps_for_treat, sleep.slept))
+        treat_progress: Sleeps.treat_progress(date, sleep.slept))
       nil -> render(conn, "new.html", changeset: Sleeps.change_sleep(%Sleep{date: date}))
     end
   end
@@ -38,7 +36,7 @@ defmodule SleepChartWeb.SleepController do
   end
 
   defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, _opts) do
-    case SleepChartWeb.SleepView.parse_date(date) do
+    case DateHelper.parse_slug(date) do
       {:ok, parsed} -> assign(conn, :date, NaiveDateTime.to_date(parsed))
       {:error, _} ->
         conn
@@ -49,12 +47,12 @@ defmodule SleepChartWeb.SleepController do
   end
 
   defp get_today(conn, _opts) do
-    assign(conn, :today, Sleeps.today @timezone)
+    assign(conn, :today, DateHelper.today)
   end
 
   defimpl Phoenix.Param, for: Date do
     def to_param(%Date{} = date) do
-      SleepChartWeb.SleepView.format_date(date)
+      DateHelper.format_slug(date)
     end
   end
 

@@ -10,7 +10,6 @@ use Mix.Config
 config :sleep_chart,
   ecto_repos: [SleepChart.Repo],
   timezone: "Europe/London",
-  date_format: "{YYYY}-{0M}-{0D}",
   sleeps_for_treat: 5
 
 # Configures the endpoint

@@ -5,15 +5,9 @@ defmodule SleepChart.Sleeps do
 
   import Ecto.Query, warn: false
   alias SleepChart.Repo
-
   alias SleepChart.Sleeps.Sleep
 
-  @doc """
-  Returns the current day in given timezone
-  """
-  def today(timezone) do
-    DateTime.to_date Timex.now(timezone)
-  end
+  @sleeps_for_treat Application.get_env(:sleep_chart, :sleeps_for_treat)
 
   @doc """
   Gets a single sleep.
@@ -70,16 +64,16 @@ defmodule SleepChart.Sleeps do
   Returns information about the progress towards a treat
 
   ## Examples
-      iex> treat_progress(~D[2019-01-01], 5, true)
+      iex> treat_progress(~D[2019-01-01], true)
       { 2, 3, false }
   """
-  def treat_progress(%Date{} = date, sleeps_for_treat, slept_this_date) do
+  def treat_progress(%Date{} = date, slept_this_date) do
     total_sleeps = Repo.aggregate(
       (from s in Sleep, where: s.date <= ^date and s.slept == true), :count, :slept)
 
-    case (rem total_sleeps, sleeps_for_treat) do
-      0 when slept_this_date -> {sleeps_for_treat, 0, true}
-      n -> {n, sleeps_for_treat - n, false}
+    case (rem total_sleeps, @sleeps_for_treat) do
+      0 when slept_this_date -> {@sleeps_for_treat, 0, true}
+      n -> {n, @sleeps_for_treat - n, false}
     end
   end
 
