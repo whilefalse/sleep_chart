@@ -4,7 +4,7 @@ defmodule SleepChartWeb.SleepController do
   alias SleepChart.Sleeps.Sleep
   alias SleepChartWeb.Helpers.Date, as: DateHelper
 
-  plug :parse_date when action in [:show, :create]
+  plug :parse_date_slug when action in [:show, :create]
   plug :get_today
 
   def index(%Plug.Conn{assigns: %{today: today}} = conn, _params) do
@@ -21,11 +21,7 @@ defmodule SleepChartWeb.SleepController do
   end
 
   def create(%Plug.Conn{assigns: %{date: date}} = conn, %{"sleep" => sleep_params}) do
-    slept = case sleep_params do
-      %{"slept" => _} -> true
-      _ -> false
-    end
-    params = %{date: date, slept: slept}
+    params = %{date: date, slept: Map.has_key?(sleep_params, "slept")}
 
     case Sleeps.create_sleep(params) do
       {:ok, _} ->
@@ -35,9 +31,10 @@ defmodule SleepChartWeb.SleepController do
     end
   end
 
-  defp parse_date(%Plug.Conn{params: %{"date" => date}} = conn, _opts) do
+  # Helper plugs
+  defp parse_date_slug(%Plug.Conn{params: %{"date" => date}} = conn, _opts) do
     case DateHelper.parse_slug(date) do
-      {:ok, parsed} -> assign(conn, :date, NaiveDateTime.to_date(parsed))
+      {:ok, parsed} -> assign(conn, :date, parsed)
       {:error, _} ->
         conn
         |> put_status(:not_found)
@@ -49,11 +46,4 @@ defmodule SleepChartWeb.SleepController do
   defp get_today(conn, _opts) do
     assign(conn, :today, DateHelper.today)
   end
-
-  defimpl Phoenix.Param, for: Date do
-    def to_param(%Date{} = date) do
-      DateHelper.format_slug(date)
-    end
-  end
-
 end

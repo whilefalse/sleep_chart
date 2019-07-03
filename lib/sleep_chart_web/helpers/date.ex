@@ -8,10 +8,18 @@ defmodule SleepChartWeb.Helpers.Date do
   end
 
   def parse_slug(string) do
-    Timex.parse(string, @date_slug_format)
+    with {:ok, parsed} <- Timex.parse(string, @date_slug_format) do
+      {:ok, NaiveDateTime.to_date parsed}
+    end
   end
 
   def today do
     DateTime.to_date Timex.now(@timezone)
+  end
+
+  defimpl Phoenix.Param, for: Date do
+    def to_param(%Date{} = date) do
+      SleepChartWeb.Helpers.Date.format_slug(date)
+    end
   end
 end

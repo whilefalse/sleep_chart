@@ -14,8 +14,10 @@
       <div class="container">
         <h1><a href="/">Felicity's Sleep Chart</a></h1>
         <nav>
-          <a href="<%= Routes.sleep_path(@conn, :show, yesterday(@date)) %>"><span>&laquo;</span></a>
-          <a href="<%= Routes.sleep_path(@conn, :show, tomorrow(@date)) %>"><span>&raquo;</span></a>
+          <%= if assigns[:date] do %>
+            <a href="<%= Routes.sleep_path(@conn, :show, yesterday(@date)) %>"><span>&laquo;</span></a>
+            <a href="<%= Routes.sleep_path(@conn, :show, tomorrow(@date)) %>"><span>&raquo;</span></a>
+          <% end %>
         </nav>
       </div>
     </header>
