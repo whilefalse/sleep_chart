@@ -10,7 +10,9 @@ use Mix.Config
 config :sleep_chart,
   ecto_repos: [SleepChart.Repo],
   timezone: "Europe/London",
-  sleeps_for_treat: 5
+  sleeps_for_treat: 5,
+  # Dependency injection
+  calendar: SleepChartWeb.Helpers.Calendar
 
 # Configures the endpoint
 config :sleep_chart, SleepChartWeb.Endpoint,

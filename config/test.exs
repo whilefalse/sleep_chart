@@ -1,9 +1,12 @@
 use Mix.Config
 
+# Configure mocks
+config :sleep_chart,
+  calendar: SleepChartWeb.MockCalendar
 # Configure your database
 config :sleep_chart, SleepChart.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "sleep_chart",
+  password: "sleep_chart",
   database: "sleep_chart_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

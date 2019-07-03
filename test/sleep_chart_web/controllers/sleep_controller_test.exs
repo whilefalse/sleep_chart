@@ -1,88 +1,112 @@
 defmodule SleepChartWeb.SleepControllerTest do
   use SleepChartWeb.ConnCase
-
+  import Mox
   alias SleepChart.Sleeps
 
-  @create_attrs %{date: ~D[2010-04-17], slept: true}
-  @update_attrs %{date: ~D[2011-05-18], slept: false}
-  @invalid_attrs %{date: nil, slept: nil}
+  setup :setup_mocks
+  setup :verify_on_exit!
 
-  def fixture(:sleep) do
-    {:ok, sleep} = Sleeps.create_sleep(@create_attrs)
+  @default_date ~D[2010-04-17]
+  @default_date_string "2010-04-17"
+
+  def fixture(type, date \\ @default_date)
+  def fixture(:slept, date) do
+    {:ok, sleep} = Sleeps.create_sleep(%{date: date, slept: true})
+    sleep
+  end
+  def fixture(:did_not_sleep, date) do
+    {:ok, sleep} = Sleeps.create_sleep(%{date: date, slept: false})
     sleep
   end
 
+  def setup_mocks(_context) do
+    stub(SleepChartWeb.MockCalendar, :today, fn -> @default_date end)
+    :ok
+  end
+
   describe "index" do
-    test "lists all sleeps", %{conn: conn} do
+    test "redirects to today", %{conn: conn} do
+
       conn = get(conn, Routes.sleep_path(conn, :index))
-      assert html_response(conn, 200) =~ "Listing Sleeps"
+      assert redirected_to(conn) =~ @default_date_string
     end
   end
 
-  describe "new sleep" do
-    test "renders form", %{conn: conn} do
-      conn = get(conn, Routes.sleep_path(conn, :new))
-      assert html_response(conn, 200) =~ "New Sleep"
+  describe "show" do
+    test "when sleep with given date does not exist", %{conn: conn} do
+      conn = get(conn, Routes.sleep_path(conn, :show, @default_date))
+      response = html_response(conn, 200)
+
+      # Buttons should be visible for creating a new sleep
+      assert response =~ "<form"
+      assert response =~ "I slept all night"
+      assert response =~ "I woke up"
+    end
+
+    test "when slept that day", %{conn: conn} do
+      sleep = fixture(:slept)
+      conn = get(conn, Routes.sleep_path(conn, :show, sleep.date))
+
+      assert html_response(conn, 200) =~ "You slept last night!"
+    end
+
+    test "when did not sleep that day", %{conn: conn} do
+      sleep = fixture(:did_not_sleep)
+      conn = get(conn, Routes.sleep_path(conn, :show, sleep.date))
+
+      assert html_response(conn, 200) =~ "Don't worry, keep trying!"
+    end
+    
+    test "when a treat is due", %{conn: conn} do
+      Enum.each([
+        {:slept, ~D[2019-01-01]},
+        {:slept, ~D[2019-01-02]},
+        {:slept, ~D[2019-01-03]},
+        {:slept, ~D[2019-01-04]},
+        # Non-sleeps don't break the chain
+        {:did_not_sleep, ~D[2019-01-05]},
+        {:slept, ~D[2019-01-06]},
+      ], fn {type, date} -> fixture(type, date) end)
+
+      conn = get(conn, Routes.sleep_path(conn, :show, ~D[2019-01-06]))
+      assert html_response(conn, 200) =~ "Time for a treat"
+    end
+
+    test "returns 404 with an invalid date", %{conn: conn} do
+      conn = get(conn, Routes.sleep_path(conn, :show, "foo"))
+      assert html_response(conn, 404)
     end
   end
 
   describe "create sleep" do
-    test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, Routes.sleep_path(conn, :create), sleep: @create_attrs)
+    def test_valid(%Plug.Conn{} = conn, %{} = params, expected) do
+      conn = put(conn, Routes.sleep_path(conn, :create, @default_date), %{sleep: params})
+      assert redirected_to(conn) == Routes.sleep_path(conn, :show, @default_date)
 
-      assert %{id: id} = redirected_params(conn)
-      assert redirected_to(conn) == Routes.sleep_path(conn, :show, id)
-
-      conn = get(conn, Routes.sleep_path(conn, :show, id))
-      assert html_response(conn, 200) =~ "Show Sleep"
+      conn = get(conn, Routes.sleep_path(conn, :show, @default_date))
+      response = html_response(conn, 200)
+      assert response =~ "Today"
+      assert response =~ expected
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn = post(conn, Routes.sleep_path(conn, :create), sleep: @invalid_attrs)
-      assert html_response(conn, 200) =~ "New Sleep"
+    test "redirects to show when data is valid (slept)", %{conn: conn} do
+      test_valid conn, %{slept: true}, "You slept last night!"
     end
-  end
-
-  describe "edit sleep" do
-    setup [:create_sleep]
-
-    test "renders form for editing chosen sleep", %{conn: conn, sleep: sleep} do
-      conn = get(conn, Routes.sleep_path(conn, :edit, sleep))
-      assert html_response(conn, 200) =~ "Edit Sleep"
-    end
-  end
-
-  describe "update sleep" do
-    setup [:create_sleep]
-
-    test "redirects when data is valid", %{conn: conn, sleep: sleep} do
-      conn = put(conn, Routes.sleep_path(conn, :update, sleep), sleep: @update_attrs)
-      assert redirected_to(conn) == Routes.sleep_path(conn, :show, sleep)
-
-      conn = get(conn, Routes.sleep_path(conn, :show, sleep))
-      assert html_response(conn, 200)
+    
+    test "redirects to show when the data is valid (not slept)", %{conn: conn} do
+      test_valid conn, %{}, "Don't worry, keep trying!"
     end
 
-    test "renders errors when data is invalid", %{conn: conn, sleep: sleep} do
-      conn = put(conn, Routes.sleep_path(conn, :update, sleep), sleep: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Edit Sleep"
+    test "renders error when sleep already exists", %{conn: conn} do
+      fixture(:slept)
+      conn = put(conn, Routes.sleep_path(conn, :create, @default_date), %{sleep: %{}})
+
+      assert html_response(conn, 200) =~ "already recorded a sleep for this date"
     end
-  end
 
-  describe "delete sleep" do
-    setup [:create_sleep]
-
-    test "deletes chosen sleep", %{conn: conn, sleep: sleep} do
-      conn = delete(conn, Routes.sleep_path(conn, :delete, sleep))
-      assert redirected_to(conn) == Routes.sleep_path(conn, :index)
-      assert_error_sent 404, fn ->
-        get(conn, Routes.sleep_path(conn, :show, sleep))
-      end
+    test "returns 404 with an invalid date", %{conn: conn} do
+      conn = put(conn, Routes.sleep_path(conn, :create, "foo"))
+      assert html_response(conn, 404)
     end
-  end
-
-  defp create_sleep(_) do
-    sleep = fixture(:sleep)
-    {:ok, sleep: sleep}
   end
 end

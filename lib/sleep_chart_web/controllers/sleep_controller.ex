@@ -40,6 +40,7 @@ defmodule SleepChartWeb.SleepController do
         |> put_status(:not_found)
         |> put_view(SleepChartWeb.ErrorView)
         |> render(:"404")
+        |> halt
     end
   end
 
